@@ -414,6 +414,43 @@ void set_obst(vector<double> x_points, vector<double> y_points, vector<State>& o
 //여기까지 #2
 
 
+//누락디었던 normalize_angle추가
+double normalize_angle(double angle)
+{
+    if (std::abs(angle) > M_PI)
+    {
+        std::cout << "Renormalizing angle" <<  std::endl;
+        if(angle > M_PI)
+            std::cout << "Angle > Pi" <<  std::endl;
+            angle -= 2*M_PI;
+        if(angle < -M_PI)
+            std::cout << "Angle < -Pi" <<  std::endl;
+            angle += 2*M_PI;
+        return angle;
+    }
+}
+
+//누락되었던 find_closet_point추가
+// find the point that is closest to the point (x_position, y_position)
+// and return its index in the list of points (x_pts, y_pts)
+int find_closest_point(double x_position, double y_position, const vector<double> &x_pts, const vector<double> &y_pts)
+{
+    int closest_point_index = 0;
+    double min_dist = std::numeric_limits<double>::max();
+    double dist = 0;
+
+    for (int i=0; i < x_pts.size(); ++i)
+    {
+        dist = std::hypot(x_pts[i] - x_position, y_pts[i] - y_position);
+        if (dist < min_dist)
+        {
+            min_dist = dist;
+            closest_point_index = i;
+        }
+    }
+
+    return closest_point_index;
+}
 /**
  * @brief 메인 실행 함수
   * @note WebSocket을 통해 자율주행 차량의 데이터를 실시간으로 송수신
