@@ -168,7 +168,7 @@ vector<State> obstacles; //장애물들의 위치 및 상태 정보를 저장하
  * @note 스타터 코드 원본 유지
  */
 
- /* 
+ /* */
 void path_planner(
   vector<double>& x_points, //main.cpp에서 차량의 X 좌표 데이터를 전달 --> 용도 : 주행 경로 X 좌표
   vector<double>& y_points, //주행 경로 Y 좌표
@@ -252,44 +252,9 @@ void path_planner(
   	  v_points.push_back(0);
 
   	}
-  	return; //차량이 정지해야 하는 상황이면 여기서 함수 종료 --> 더 이상 주행 경로를 생성하지 않음 
-  } */
+  	return; //차량이 정지해야 하는 상황이면 여기서 함수 종료 --> 더 이상 주행 경로를 생성하지 않음
+  }
 
-  //스타터코드의 path_planner함수 복원
-  void path_planner(vector<double>& x_points, vector<double>& y_points, vector<double>& v_points, double yaw, double velocity, State goal, bool is_junction, string tl_state, vector< vector<double> >& spirals_x, vector< vector<double> >& spirals_y, vector< vector<double> >& spirals_v, vector<int>& best_spirals){
-
-    State ego_state;
-  
-    ego_state.location.x = x_points[x_points.size()-1];
-    ego_state.location.y = y_points[y_points.size()-1];
-    ego_state.velocity.x = velocity;
-  
-    if( x_points.size() > 1 ){
-        ego_state.rotation.yaw = angle_between_points(x_points[x_points.size()-2], y_points[y_points.size()-2], x_points[x_points.size()-1], y_points[y_points.size()-1]);
-        ego_state.velocity.x = v_points[v_points.size()-1];
-        if(velocity < 0.01)
-            ego_state.rotation.yaw = yaw;
-  
-    }
-  
-    Maneuver behavior = behavior_planner.get_active_maneuver();
-  
-    goal = behavior_planner.state_transition(ego_state, goal, is_junction, tl_state);
-  
-    if(behavior == STOPPED){
-  
-        int max_points = 20;
-        double point_x = x_points[x_points.size()-1];
-        double point_y = y_points[x_points.size()-1];
-        while( x_points.size() < max_points ){
-          x_points.push_back(point_x);
-          y_points.push_back(point_y);
-          v_points.push_back(0);
-  
-        }
-        return;
-    }
-  
 
 
   //차량의 주행 경로를 생성하고, 속도를 결정하는 역할
