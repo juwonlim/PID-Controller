@@ -167,6 +167,8 @@ vector<State> obstacles; //장애물들의 위치 및 상태 정보를 저장하
    ####결과적으로 main.cpp에서 호출되어 차량의 주행 데이터를 실시간으로 업데이트하는 역할을 함!!!!
  * @note 스타터 코드 원본 유지
  */
+
+ /* */
 void path_planner(
   vector<double>& x_points, //main.cpp에서 차량의 X 좌표 데이터를 전달 --> 용도 : 주행 경로 X 좌표
   vector<double>& y_points, //주행 경로 Y 좌표
@@ -587,7 +589,9 @@ int main ()
 
           // Save time and compute delta time
             // 시간 갱신 및 델타 타임 계산
-          time(&timer);   //time(&timer); → 현재 시간을 가져옴.
+          time(&timer);   //time(&timer); → 현재 시간을 가져옴. 
+
+
           new_delta_time = difftime(timer, prev_timer); //difftime(timer, prev_timer); → 이전 타임스탬프와 비교하여 경과 시간(델타 타임)을 계산.
           prev_timer = timer; //prev_timer를 최신 시간으로 갱신
 
@@ -618,11 +622,13 @@ int main ()
 
            // 🚗 TODO (Step 3): 조향(steer) 제어 적용
           // Compute steer error
-        double error_steer; //스타터 코드 원본
-        double steer_output; //mithul12의 코드 적용인줄 알았는데 원래 있던 스타터 코드, mithul12가 위치만 바꾼것, 아래의 중복코드는 주석처리
+        
+        double steer_output = 0.0;
+        //double steer_output; //mithul12의 코드 적용인줄 알았는데 원래 있던 스타터 코드, mithul12가 위치만 바꾼것, 아래의 중복코드는 주석처리
                             //steer_output : PID 제어기를 통해 계산된 조향 값
         
-        //double error_steer = 0;  // 조향 오차 (나중에 계산할 것) ,error_steer : 조향 오차값을 저장하는 변수 
+        //double error_steer; //스타터 코드 원본
+        double error_steer = 0.0;  // 조향 오차 (나중에 계산할 것) ,error_steer : 조향 오차값을 저장하는 변수 
                                    // 0으로 초기화 이유 --> 실제 조향 오차 값을 계산하지 않고, 임시로 0으로 설정
                                    //오차 계산하는 코드가 아직 구현되지 않았기 때문.
                                    //아래의 3줄로 오차 계산하는 코드가 구현됨 그러므로 
@@ -711,8 +717,8 @@ int main ()
                                                           
            // 🚗 TODO (Step 2): 가속(throttle) 및 브레이크 제어 적용
           // Compute error of speed
-          double error_throttle; //스타터 코드 원본 
-          //double error_throttle = 0;  // 속도 오차 (나중에 계산할 것) ,error_throttle : 현재 속도와 목표 속도 간 오차 값을 저장하는 변수
+          //double error_throttle; //스타터 코드 원본 
+          double error_throttle = 0.0;  // 속도 오차 (나중에 계산할 것) ,error_throttle : 현재 속도와 목표 속도 간 오차 값을 저장하는 변수
                                       //현재 속도 오차를 계산하는 코드가 없어서 error_throttle = 0; 으로 설정
                                       //error_throttle = 0; → 🚨 임시 값 (추후 속도 오차 계산을 구현해야 함)
                                       //실제 속도 오차 계산 코드가 추가되면, 이 부분에서 오차를 정확하게 계산해야 함.
@@ -723,7 +729,8 @@ int main ()
           // error_throttle = 0; //이거는 초기화인듯..일단 주석처리
           error_throttle = v_points[closest_point_index] - velocity; //mithul12의 코드응용 , 이게 속도 오차 계산하는 코드임
 
-          double throttle_output;
+          //double throttle_output;
+          double throttle_output = 0.0;
           double brake_output;
 
           //* TODO (Step 2): 속도 오차(error_throttle)를 계산하여 PID 입력으로 전달
@@ -789,6 +796,25 @@ int main ()
           msgJson["throttle"] = throttle_output; //throttle_output : 가속도 값
           msgJson["steer"] = steer_output; //steer_output : 조향(steering) 값
           //차량이 WebSocket을 통해 서버에서 데이터를 받아 이 값들을 사용해 실제로 움직이게 됨
+
+          
+
+          // 유효성 검사 추가 (NaN체크 :steer_output이나 throttle_output 값이 계산 중에 NaN (Not a Number)이 될 가능성이 있음. 
+          // 이는 나눗셈에서 0으로 나누거나 정의되지 않은 연산이 발생했을 때 발생할 수 있음 )
+          //에러 대응: if (isnan(steer_output) || isnan(throttle_output))를 통해 NaN 여부를 확인하고, 감지되면 값을 0으로 초기화
+          //name 'steer' is not defined 에러가 발생 --> 이는 steer_output 값이 정의되지 않거나 잘못된 데이터를 전달했을 가능성을 나타냄. 따라서 NaN 체크는 필요
+          if (isnan(steer_output) || isnan(throttle_output)) {
+            cout << "Error: NaN detected in steer or throttle output" << endl;
+            steer_output = 0.0;
+            throttle_output = 0.0;
+          }
+
+          // 디버깅용 출력
+          //name 'steer' is not defined 에러는 WebSocket으로 전송되는 JSON 데이터에서 steer 필드가 빠졌거나 잘못 전달되었음을 의미. 
+          // 디버깅 출력으로 steer_output 값이 제대로 전달되는지 확인 가능
+          cout << "Steer Output: " << steer_output << ", Throttle Output: " << throttle_output << endl;
+
+
 
 
           //경로 데이터를 JSON 객체에 저장
