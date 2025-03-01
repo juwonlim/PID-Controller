@@ -255,7 +255,11 @@ void path_planner(
   	return; //차량이 정지해야 하는 상황이면 여기서 함수 종료 --> 더 이상 주행 경로를 생성하지 않음 
   } */
 
-  //스타터코드의 path_planner함수 복원
+
+
+
+  /* 
+  //스타터코드의 path_planner함수 복원 --> 그러나 작동안됨, 그래서 멘토가 주신 코드를 사용하기로!
   void path_planner(vector<double>& x_points, vector<double>& y_points, vector<double>& v_points, double yaw, double velocity, State goal, bool is_junction, string tl_state, vector< vector<double> >& spirals_x, vector< vector<double> >& spirals_y, vector< vector<double> >& spirals_v, vector<int>& best_spirals){
 
     State ego_state;
@@ -289,7 +293,81 @@ void path_planner(
         }
         return;
     }
-  
+  */
+
+  //여기서부터 멘토님이 주신 path_planner코드
+void path_planner(vector<double>& x_points, vector<double>& y_points, vector<double>& v_points, double yaw, double velocity, State goal, bool is_junction, string tl_state, vector< vector<double> >& spirals_x, vector< vector<double> >& spirals_y, vector< vector<double> >& spirals_v, vector<int>& best_spirals){
+  State ego_state;
+  ego_state.location.x = x_points[x_points.size()-1];
+  ego_state.location.y = y_points[y_points.size()-1];
+  ego_state.velocity.x = velocity;
+  if( x_points.size() > 1 ){
+   ego_state.rotation.yaw = angle_between_points(x_points[x_points.size()-2], y_points[y_points.size()-2], x_points[x_points.size()-1], y_points[y_points.size()-1]);
+   ego_state.velocity.x = v_points[v_points.size()-1];
+   if(velocity < 0.01)
+    ego_state.rotation.yaw = yaw;
+  }
+  Maneuver behavior = behavior_planner.get_active_maneuver();
+  goal = behavior_planner.state_transition(ego_state, goal, is_junction, tl_state);
+  if(behavior == STOPPED){
+   int max_points = 20;
+   double point_x = x_points[x_points.size()-1];
+   double point_y = y_points[x_points.size()-1];
+   while( x_points.size() < max_points ){
+     x_points.push_back(point_x);
+     y_points.push_back(point_y);
+     v_points.push_back(0);
+   }
+   return;
+  }
+  auto goal_set = motion_planner.generate_offset_goals(goal);
+  auto spirals = motion_planner.generate_spirals(ego_state, goal_set);
+  auto desired_speed = utils::magnitude(goal.velocity);
+  State lead_car_state;  // = to the vehicle ahead...
+  if(spirals.size() == 0){
+   cout << "Error: No spirals generated " << endl;
+   return;
+  }
+  for(int i = 0; i < spirals.size(); i++){
+    auto trajectory = motion_planner._velocity_profile_generator.generate_trajectory( spirals[i], desired_speed, ego_state,
+                                                                                    lead_car_state, behavior);
+    vector<double> spiral_x;
+    vector<double> spiral_y;
+    vector<double> spiral_v;
+    for(int j = 0; j < trajectory.size(); j++){
+      double point_x = trajectory[j].path_point.x;
+      double point_y = trajectory[j].path_point.y;
+      double velocity = trajectory[j].v;
+      spiral_x.push_back(point_x);
+      spiral_y.push_back(point_y);
+      spiral_v.push_back(velocity);
+    }
+    spirals_x.push_back(spiral_x);
+    spirals_y.push_back(spiral_y);
+    spirals_v.push_back(spiral_v);
+  }
+  best_spirals = motion_planner.get_best_spiral_idx(spirals, obstacles, goal);
+  int best_spiral_idx = -1;
+  if(best_spirals.size() > 0)
+   best_spiral_idx = best_spirals[best_spirals.size()-1];
+  int index = 0;
+  int max_points = 20;
+  int add_points = spirals_x[best_spiral_idx].size();
+  while( x_points.size() < max_points && index < add_points ){
+    double point_x = spirals_x[best_spiral_idx][index];
+    double point_y = spirals_y[best_spiral_idx][index];
+    double velocity = spirals_v[best_spiral_idx][index];
+    index++;
+    x_points.push_back(point_x);
+    y_points.push_back(point_y);
+    v_points.push_back(velocity);
+  }
+} //여기까지 멘토님이 주신 path_planner코드, 내가 사용한 starter파일의 코드와는 많이 다름
+
+
+
+
+
 
 
   //차량의 주행 경로를 생성하고, 속도를 결정하는 역할
