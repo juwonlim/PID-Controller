@@ -105,7 +105,7 @@ static const double MAX_THROTTLE = 1.0;
 static const double MIN_THROTTLE = -1.0;
 */
 
-/* iteration #3*/
+/* iteration #3 : 차선변경시 멈추는 시간은 짧아졌으나 역시 도로중앙 가로수 있는 곳으로 넘어가버림
 //조향반응속도 개선 (문제 : 앞차를 피한 후 너무 큰 조향을 해서 방지턱을 넘어감)
 static const double KP_STEER = 0.25;
 static const double KI_STEER = 0.0008;
@@ -122,6 +122,26 @@ static const double KD_THROTTLE = 0.03;
 //아래 값은 아직 조정변수가 아님
 static const double MAX_THROTTLE = 1.0;
 static const double MIN_THROTTLE = -1.0;
+*/
+
+/* iteration #4 */
+static const double KP_STEER = 0.22; //조향강도 살짝 줄임
+static const double KI_STEER = 0.001; //조향 오차가 누적될 경우 조금 더 정밀하게 보정하도록 만듦.
+static const double KD_STEER = 0.15; // 빠르게 조향하려는 움직임을 감쇠하여 조향이 너무 크지 않도록 만듦.
+
+static const double MAX_STEER = 1.2;
+static const double MIN_STEER = -1.2;
+
+//가속반응속도 개선
+static const double KP_THROTTLE = 0.15; //0.15로 증가 ,장애물을 피할 때 너무 느려지지 않도록 가속도를 조금 더 높임
+static const double KI_THROTTLE = 0.0008;
+static const double KD_THROTTLE = 0.05; //0.05로 증가, 속도 변화가 너무 급격하지 않도록 조정 (느려졌다가 빠르게 가속하는 문제 방지)
+
+//아래 값은 아직 조정변수가 아님
+static const double MAX_THROTTLE = 1.0;
+static const double MIN_THROTTLE = -1.0;
+
+
 
 
 /**
