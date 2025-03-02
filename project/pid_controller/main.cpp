@@ -535,11 +535,11 @@ int main ()
           // Compute steer error
         
         
-        //double steer_output; //mithul12의 코드 적용인줄 알았는데 원래 있던 스타터 코드, mithul12가 위치만 바꾼것, 아래의 중복코드는 주석처리
-        double steer_output = 0.0;                   
+        double steer_output; //mithul12의 코드 적용인줄 알았는데 원래 있던 스타터 코드, mithul12가 위치만 바꾼것, 아래의 중복코드는 주석처리
+        //double steer_output = 0.0;                   
         
-        //double error_steer; //스타터 코드 원본
-        double error_steer = 0.0;  
+        double error_steer; //스타터 코드 원본
+        //double error_steer = 0.0;  
                                  
  
         //아래 3줄의 코드 ,mithul12의 코드응용                             
