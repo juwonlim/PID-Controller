@@ -124,7 +124,8 @@ static const double MAX_THROTTLE = 1.0;
 static const double MIN_THROTTLE = -1.0;
 */
 
-/* iteration #4 */
+
+/*  iteration #4
 static const double KP_STEER = 0.22; //조향강도 살짝 줄임
 static const double KI_STEER = 0.001; //조향 오차가 누적될 경우 조금 더 정밀하게 보정하도록 만듦.
 static const double KD_STEER = 0.15; // 빠르게 조향하려는 움직임을 감쇠하여 조향이 너무 크지 않도록 만듦.
@@ -140,6 +141,34 @@ static const double KD_THROTTLE = 0.05; //0.05로 증가, 속도 변화가 너�
 //아래 값은 아직 조정변수가 아님
 static const double MAX_THROTTLE = 1.0;
 static const double MIN_THROTTLE = -1.0;
+*/
+
+
+/* iteration #5 */
+// 남은 문제 : 
+// 1.첫 번째 앞차를 피해 차선 변경 중 멈칫하는 현상
+// 2. 두 번째 앞차를 피해 우측 차선이 아니라 중앙분리대 쪽으로 진입
+// 1,2번 해결 필요          
+static const double KP_STEER = 0.24; //0.24로 증가시킴, 더 빠르게 차선변경 
+static const double KI_STEER = 0.0008; //0.0008로 감소,오차 보정을 줄여 불필요한 조향이 발생하지 않도록 함
+static const double KD_STEER = 0.12; //0.12로 감소, 과도한 핸들 반응을 방지하고 부드러운 움직임 유도
+
+//MAX_STEER와 MIN_STEER을 1.0으로 조정
+//차량이 너무 급격하게 조향하지 않도록 제한
+// +1.0, -1.0으로 좌우 동일하게 균형유지
+static const double MAX_STEER = 1.0; 
+static const double MIN_STEER = -1.0;
+
+//가속반응속도 개선
+static const double KP_THROTTLE = 0.13;  //KP_THROTTLE 값을 0.13으로 감소, 차선 변경 중 가속이 과하게 이루어지는 문제 방지
+static const double KI_THROTTLE = 0.0008;
+static const double KD_THROTTLE = 0.06; // KD_THROTTLE 값을 0.06으로 증가, 속도 변화가 너무 급격하지 않도록 보정하여 차선 변경을 자연스럽게 유지
+
+
+//급가속 발생우려로 아래 2개의 파라메터는 이번은 수정안함
+static const double MAX_THROTTLE = 1.0;
+static const double MIN_THROTTLE = -1.0;
+
 
 
 
