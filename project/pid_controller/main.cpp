@@ -89,7 +89,7 @@ static const double MAX_THROTTLE = 1.0;
 static const double MIN_THROTTLE = -1.0;
 */
 
-/* iteration #2*/
+/* iteration #2 : 차량이 앞차만나면 한참 정지, 한번은 회피성공후에 가로수 분리대로 올라간후 반대차선으로 넘어가버림
 static const double KP_STEER = 0.2;
 static const double KI_STEER = 0.0005;
 static const double KD_STEER = 0.1;
@@ -103,9 +103,25 @@ static const double KD_THROTTLE = 0.05;
 
 static const double MAX_THROTTLE = 1.0;
 static const double MIN_THROTTLE = -1.0;
+*/
 
+/* iteration #3*/
+//조향반응속도 개선 (문제 : 앞차를 피한 후 너무 큰 조향을 해서 방지턱을 넘어감)
+static const double KP_STEER = 0.25;
+static const double KI_STEER = 0.0008;
+static const double KD_STEER = 0.12;
 
+static const double MAX_STEER = 1.2;
+static const double MIN_STEER = -1.2;
 
+//가속반응속도 개선(문제 : 앞차를 피하는데 너무 오래정지한다)
+static const double KP_THROTTLE = 0.12;
+static const double KI_THROTTLE = 0.0008;
+static const double KD_THROTTLE = 0.03;
+
+//아래 값은 아직 조정변수가 아님
+static const double MAX_THROTTLE = 1.0;
+static const double MIN_THROTTLE = -1.0;
 
 
 /**
