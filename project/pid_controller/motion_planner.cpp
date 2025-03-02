@@ -134,13 +134,19 @@ bool MotionPlanner::valid_goal(const State& main_goal,
 
 std::vector<int> MotionPlanner::get_best_spiral_idx(
     const std::vector<std::vector<PathPoint>>& spirals,
-    const std::vector<State>& obstacles, const State& goal_state) {
+    const std::vector<State>& obstacles, 
+    const State& goal_state) {
   // LOG(INFO) << "Num Spirals: " << spirals.size();
   double best_cost = DBL_MAX;
   std::vector<int> collisions;
   int best_spiral_idx = -1;
+
   for (size_t i = 0; i < spirals.size(); ++i) {
     double cost = calculate_cost(spirals[i], obstacles, goal_state);
+
+    std::cout << "Spiral Index: " << i << ", Cost: " << cost << std::endl; //디버깅 출력 , 내가 추가한 코드
+    //콘솔에 각 spiral의 cost 값과 선택된 최적의 spiral_idx가 출력됨.
+    //특정 spiral의 cost가 DBL_MAX보다 크다면 충돌이 발생할 가능성이 있음.
 
     if (cost < best_cost) {
       best_cost = cost;
@@ -151,6 +157,10 @@ std::vector<int> MotionPlanner::get_best_spiral_idx(
     }
   }
   if (best_spiral_idx != -1) {
+    
+    std::cout << "Best Spiral Selected: " << best_spiral_idx << std::endl; //디버깅 출력, 내가 추가한 코드
+    
+
     collisions.push_back(best_spiral_idx);
     return collisions;
   }

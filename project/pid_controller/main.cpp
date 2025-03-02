@@ -144,7 +144,7 @@ static const double MIN_THROTTLE = -1.0;
 */
 
 
-/* iteration #5 */
+/* iteration #5 
 // 남은 문제 : 
 // 1.첫 번째 앞차를 피해 차선 변경 중 멈칫하는 현상
 // 2. 두 번째 앞차를 피해 우측 차선이 아니라 중앙분리대 쪽으로 진입
@@ -166,6 +166,29 @@ static const double KD_THROTTLE = 0.06; // KD_THROTTLE 값을 0.06으로 증가,
 
 
 //급가속 발생우려로 아래 2개의 파라메터는 이번은 수정안함
+static const double MAX_THROTTLE = 1.0;
+static const double MIN_THROTTLE = -1.0;
+*/
+
+
+
+
+// iteration #6 
+static const double KP_STEER = 0.26; // KP_STEER = 0.26 (+0.02 증가) → 차선 변경 반응 속도 증가
+static const double KI_STEER = 0.0006;  //KI_STEER = 0.0006 (-0.0002 감소) → 조향 오차 누적 완화
+static const double KD_STEER = 0.10; //KD_STEER = 0.10 (-0.02 감소) → 조향값 튀는 현상 억제
+
+
+static const double MAX_STEER = 0.9; //MAX_STEER = 0.9 (-0.1 감소) → 급격한 조향 억제
+static const double MIN_STEER = -0.9;
+
+//가속반응속도 개선
+static const double KP_THROTTLE = 0.14;  //KP_THROTTLE = 0.14 (+0.01 증가) → 가속 반응 조금 더 빠르게
+static const double KI_THROTTLE = 0.0007; //KI_THROTTLE = 0.0007 (-0.0001 감소) → 속도 오차 누적 줄임
+static const double KD_THROTTLE = 0.05; //KD_THROTTLE = 0.05 (-0.01 감소) → 급격한 속도 변화 방지
+
+
+
 static const double MAX_THROTTLE = 1.0;
 static const double MIN_THROTTLE = -1.0;
 
@@ -260,6 +283,7 @@ void path_planner(vector<double>& x_points, vector<double>& y_points, vector<dou
   auto goal_set = motion_planner.generate_offset_goals(goal);
   auto spirals = motion_planner.generate_spirals(ego_state, goal_set);
   auto desired_speed = utils::magnitude(goal.velocity);
+
   State lead_car_state;  // = to the vehicle ahead...
   if(spirals.size() == 0){
   cout << "Error: No spirals generated " << endl;
@@ -283,6 +307,8 @@ void path_planner(vector<double>& x_points, vector<double>& y_points, vector<dou
     spirals_y.push_back(spiral_y);
     spirals_v.push_back(spiral_v);
   }
+
+
   best_spirals = motion_planner.get_best_spiral_idx(spirals, obstacles, goal);
   int best_spiral_idx = -1;
   if(best_spirals.size() > 0)
