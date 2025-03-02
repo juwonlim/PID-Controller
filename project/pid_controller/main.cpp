@@ -1,3 +1,8 @@
+//main(2월23일 백업_delete모든 주석).cpp
+//너무 utf-8관련 오류가 많아서 대부분의 주석은 삭제했음
+//나중에 복원해줄 것 , 현재는 프로젝트가 늦어서 일단 진행
+//치명적인 utf-8오류는 void path_planner함수내에서 발생했는데 notepad++에서 일단 제거 했음
+
 /**********************************************
  * Self-Driving Car Nano-degree - Udacity
  *  Created on: September 20, 2020
@@ -7,7 +12,7 @@
 
 /**
  * @file main.cpp
- * @brief       
+ * @brief 자율주행 차량의 주요 로직을 처리하는 메인 파일
  **/
 
 #include <string>
@@ -27,7 +32,7 @@
 #include <fstream>
 #include <typeinfo>
 
-#include "json.hpp" // JSON    
+#include "json.hpp" 
 #include <carla/client/ActorBlueprint.h>
 #include <carla/client/BlueprintLibrary.h>
 #include <carla/client/Client.h>
@@ -40,16 +45,16 @@
 #include <carla/image/ImageView.h>
 #include <carla/sensor/data/Image.h>
 #include "Eigen/QR"
-#include "behavior_planner_FSM.h" //      
-#include "motion_planner.h" //    
-#include "planning_params.h"  //      
-#include "utils.h"    //   
-#include "pid_controller.h"  // PID    (main.cpp )
+#include "behavior_planner_FSM.h" 
+#include "motion_planner.h" 
+#include "planning_params.h"  
+#include "utils.h"    
+#include "pid_controller.h" 
 
 #include <limits>
 #include <iostream>
 #include <fstream>
-#include <uWS/uWS.h>  // WebSocket 
+#include <uWS/uWS.h>  
 #include <math.h>  
 #include <vector>
 #include <cmath>
@@ -60,15 +65,13 @@ using json = nlohmann::json;
 
 #define _USE_MATH_DEFINES
 
-//  main.cpp  
-//    : `pid_controller.h` (PID   )
-//    : `pid_controller.cpp` (PID   )
+//  main.cpp가 주고받는 파일들
+//  값을 가져오는 파일: `pid_controller.h` (PID 제어 클래스 사용)
+//  값을 전달하는 파일: `pid_controller.cpp` (PID 제어 변수 업데이트)
 
-
-
-// PID parameters (    PID  )
-//pid_controller.h planning_params.h      
-//mithul12  () - PID  
+// PID parameters (조향 및 가속도를 위한 PID 계수 설정)
+//pid_controller.h나 planning_params.h에서 값이 정의될 수도 있으나 여기에 정의
+//mithul12의 코드응용 () - PID 파라메터 추가
 static const double KP_STEER = 0.3;
 static const double KI_STEER = 0.001;
 static const double KD_STEER = 0.3;
@@ -84,218 +87,65 @@ static const double MIN_THROTTLE = -1.0;
 
 
 /**
- * @brief JSON     
+ * @brief JSON 데이터에서 필요한 정보를 추출하는 함수
 
- hasData(string s)   :   JSON       
-                                   (WebSocket)   JSON  ,  JSON    .
  */
-string hasData(string s) { //  `s`  
-  auto found_null = s.find("null");  //  `s` "null" 
-    auto b1 = s.find_first_of("{");  // `{` (JSON )  
-    auto b2 = s.find_first_of("}");   // `}` (JSON )  
-    if (found_null != string::npos) {  // "null" 
-      return ""; //    (JSON  )
+string hasData(string s) { 
+  auto found_null = s.find("null");  
+    auto b1 = s.find_first_of("{");  
+    auto b2 = s.find_first_of("}");   
+    if (found_null != string::npos) {  
+      return ""; 
     }
-    else if (b1 != string::npos && b2 != string::npos) { // `{`  `}` 
-      return s.substr(b1, b2 - b1 + 1); // `{`  `}` JSON   
+    else if (b1 != string::npos && b2 != string::npos) { 
+      return s.substr(b1, b2 - b1 + 1); 
     }
-    return ""; // JSON     
+    return ""; 
 }
 
 /**
-sgn(T val)   :    (Sign)   
-                        ,  1,  -1, 0 0  .
- * @brief     (: 1, : -1, 0: 0)
+sgn(T val) 함수의 의미 : 이 함수는 숫자의 부호(Sign)를 반환하는 역할을 수행
+                        즉, 양수는 1, 음수는 -1, 0이면 0을 반환하는 함수임.
+ * @brief 숫자의 부호를 반환하는 함수 (양수: 1, 음수: -1, 0: 0)
  */
-template <typename T>  //  :   (T)    ,  int, double, float          
-                       //, (int)  (double, float)  .
-int sgn(T val) { //  val   ---> (sgn(T val)     .)
-    return (T(0) < val) - (val < T(0)); // :       true(1)  false(0)  
-                                       // T(0) < val  (val 0  true(1),  false(0))
-                                       //val < T(0) (val 0  true(1),  false(0))
-                                       //(T(0) < val) - (val < T(0)) ---->   0  1 - 0 = 1 / 0 0 - 0 = 0 / 0  0 - 1 = -1
-                                      // 1,  -1, 0 0 .
+template <typename T>  
+int sgn(T val) { 
+    return (T(0) < val) - (val < T(0)); 
+                                      
 }                                       
 
 /**
- * @brief      (x1, y1) (x2, y2)    
-                ,       
-                 .
-                  .
-           path_planner()   
+ * @brief  
            
  */
 double angle_between_points(double x1, double y1, double x2, double y2){
-  return atan2(y2-y1, x2-x1); //atan2(y2 - y1, x2 - x1)  (x1, y1) (x2, y2)     
+  return atan2(y2-y1, x2-x1); 
 }
 
 
-//        
-//   (Behavior Planning)  BehaviorPlannerFSM  ()
-//,  , ,     
+// 행동 계획 및 경로 계획을 위한 객체 생성
 
-//        
-//     ,  ,      
-//BehaviorPlannerFSM  behavior_planner_FSM.h  behavior_planner_FSM.cpp  .
-BehaviorPlannerFSM behavior_planner( //BehaviorPlannerFSM   behavior_planner  -->  path_planner()   .
+BehaviorPlannerFSM behavior_planner( 
 
       P_LOOKAHEAD_TIME, P_LOOKAHEAD_MIN, P_LOOKAHEAD_MAX, P_SPEED_LIMIT,
       P_STOP_THRESHOLD_SPEED, P_REQ_STOPPED_TIME, P_REACTION_TIME,
       P_MAX_ACCEL, P_STOP_LINE_BUFFER);
 
 // Decalre and initialized the Motion Planner and all its class requirements
-// (motion_planner) motion_planner.cpp  MotionPlanner   -->         
 MotionPlanner motion_planner(P_NUM_PATHS, P_GOAL_OFFSET, P_ERR_TOLERANCE);
 
-//       
-//  set_obst()      
-bool have_obst = false; //    (: false)
-vector<State> obstacles; //      
+// 이 변수들은 장애물 데이터를 저장하고 관리하는 역할
+bool have_obst = false; 
+vector<State> obstacles; 
 
-// #1
+//여기까지 #1
 
 
 /**
- * @brief      , 
-           (, , )**    
-        , ,      
-          main.cpp  ,   (motion_planner.cpp)    
-
-   motion_planner.cpp -->  motion_planner.generate_spirals(), motion_planner.get_best_spiral_idx()    
-   behavior_planner_FSM.cpp --> behavior_planner.get_active_maneuver()    
-   main.cpp --> path_planner()   WebSocket    
-   #### main.cpp        !!!!
- * @note    
+ * @brief 
+ * @note 스타터 코드 원본 유지
  */
-
- /* 
-void path_planner(
-  vector<double>& x_points, //main.cpp  X    -->  :   X 
-  vector<double>& y_points, //  Y 
-  vector<double>& v_points,  //main.cpp     -->  :  
-  double yaw,  //main.cpp  ()   -->  :  
-  double velocity, // main.cpp     ---> :   
-  State goal, //  ,behavior_planner_FSM.cpp     -->  :   
-  bool is_junction, // , main.cpp ,    -->  :   
-  string tl_state, //, main.cpp    --->  :  
-  vector< vector<double> >& spirals_x, //2D , motion_planner.cpp    X   --> :    (X)
-  vector< vector<double> >& spirals_y, //    (Y)
-  vector< vector<double> >& spirals_v, //    ()
-  vector<int>& best_spirals){  //,motion_planner.cpp      -->  :   
-
-  State ego_state; //ego_state  (Ego Vehicle)    (State) 
-                   // , ,  (yaw)     
-                   //State  utils.h      
-                   //    , ,    
-                   //path_planner()   , ,    
-                   //      
-
-  
-  //  ego_state(  )       
-  // X , Y , (velocity) ego_state 
-  // ego_state    -->            , 
-  //  , path_planner()     , motion_planner    .
-  ego_state.location.x = x_points[x_points.size()-1]; //x_points   X    (vector)
-                                                      //x_points.size()-1   (  )
-                                                      //,   X  ego_state.location.x 
-  ego_state.location.y = y_points[y_points.size()-1]; //Y    
-  ego_state.velocity.x = velocity; // velocity    ( m/s),  ego_state.velocity.x    
-
-
-
-
-  //   (yaw) ,   
-  //  2      ,      () .
-  if( x_points.size() > 1 ){ //     2     
-                            //x_points.size() > 1   :    2     
-                                                                      // 1    .
-  	ego_state.rotation.yaw = angle_between_points( //     () .
-      x_points[x_points.size()-2], y_points[y_points.size()-2], //  
-      x_points[x_points.size()-1], y_points[y_points.size()-1] //  
-      //   (x_n-2, y_n-2)    (x_n-1, y_n-1)   yaw( ) .
-      //,   ( ) yaw .
-    );
-  	
-    ego_state.velocity.x = v_points[v_points.size()-1];  //   
-                                                        //v_points   .
-                                                        //  (v_points[v_points.size()-1])  ego_state.velocity.x .
-                                                        //,    ego_state .
-  	if(velocity < 0.01) //    
-  		ego_state.rotation.yaw = yaw; //  yaw   ,,       
-
-  }
-//     (, ,  ),        
-//behavior_planner     ,      .
-// get_active_maneuver()  behavior_planner_FSM.h Inline  ,   (FOLLOW_LANE, STOPPED )   .
-//get_active_maneuver()  main.cpp behavior_planner.get_active_maneuver(); 
-  Maneuver behavior = behavior_planner.get_active_maneuver(); //    
-
-  goal = behavior_planner.state_transition(ego_state, goal, is_junction, tl_state); //   (goal)  .
-                                                               //  (ego_state),  (is_junction),  (tl_state)   goal 
-                                                                //,      .
-                                                                //,  goal   ,      goal  
-  if(behavior == STOPPED){ //   (STOPPED ),     
-
-  	int max_points = 20;
-    // (x_points, y_points) .
-  	double point_x = x_points[x_points.size()-1]; //  ,       (x_points.size()-1) 
-  	double point_y = y_points[x_points.size()-1];
-    
-
-    //       .
-    //x_points, y_points       .
-    //v_points.push_back(0);   0    .
-    //            
-  	while( x_points.size() < max_points ){
-  	  x_points.push_back(point_x);
-  	  y_points.push_back(point_y);
-  	  v_points.push_back(0);
-
-  	}
-  	return; //       -->       
-  } */
-
-
-
-
-  /* 
-  // path_planner  -->  ,     !
-  void path_planner(vector<double>& x_points, vector<double>& y_points, vector<double>& v_points, double yaw, double velocity, State goal, bool is_junction, string tl_state, vector< vector<double> >& spirals_x, vector< vector<double> >& spirals_y, vector< vector<double> >& spirals_v, vector<int>& best_spirals){
-
-    State ego_state;
-  
-    ego_state.location.x = x_points[x_points.size()-1];
-    ego_state.location.y = y_points[y_points.size()-1];
-    ego_state.velocity.x = velocity;
-  
-    if( x_points.size() > 1 ){
-        ego_state.rotation.yaw = angle_between_points(x_points[x_points.size()-2], y_points[y_points.size()-2], x_points[x_points.size()-1], y_points[y_points.size()-1]);
-        ego_state.velocity.x = v_points[v_points.size()-1];
-        if(velocity < 0.01)
-            ego_state.rotation.yaw = yaw;
-  
-    }
-  
-    Maneuver behavior = behavior_planner.get_active_maneuver();
-  
-    goal = behavior_planner.state_transition(ego_state, goal, is_junction, tl_state);
-  
-    if(behavior == STOPPED){
-  
-        int max_points = 20;
-        double point_x = x_points[x_points.size()-1];
-        double point_y = y_points[x_points.size()-1];
-        while( x_points.size() < max_points ){
-          x_points.push_back(point_x);
-          y_points.push_back(point_y);
-          v_points.push_back(0);
-  
-        }
-        return;
-    }
-  */
-
-//   path_planner
+//멘토가 주신 path_planeer 함수
 void path_planner(vector<double>& x_points, vector<double>& y_points, vector<double>& v_points, double yaw, double velocity, State goal, bool is_junction, string tl_state, vector< vector<double> >& spirals_x, vector< vector<double> >& spirals_y, vector< vector<double> >& spirals_v, vector<int>& best_spirals){
   State ego_state;
   ego_state.location.x = x_points[x_points.size()-1];
@@ -362,174 +212,30 @@ void path_planner(vector<double>& x_points, vector<double>& y_points, vector<dou
     y_points.push_back(point_y);
     v_points.push_back(velocity);
   }
-} //   path_planner,   starter   
+} //멘토가 주신 path_planeer 함수의 끝부분
 
 
 
-
-
-
-
-  //   ,   
-  //motion_planner         ,   
-  //utils::magnitude(goal.velocity)    
-  auto goal_set = motion_planner.generate_offset_goals(goal); // (goal)      (Goal Set) 
-                                                              //           
-                                                              //goal  ,             
-                                                              //     goal_set 
-
-  auto spirals = motion_planner.generate_spirals(ego_state, goal_set); //  (ego_state)  (goal_set)     (spirals) 
-                                                                      //  spiral        .
-                                                                      // goal_set     ,       (spiral)  .
-                                                                      // motion_planner.generate_spirals(ego_state, goal_set);        spirals 
-                                                                      //:        ,     
-  auto desired_speed = utils::magnitude(goal.velocity); //   
-                                                        //  (goal)      desired_speed 
-                                                        // goal.velocity State   
-                                                        // utils::magnitude(goal.velocity)   ( ) 
-                                                        // ,            
-
-
-  //     (mithul12   X)
-  //    , (lead car)  ,   (spirals)     
-  State lead_car_state;  // = to the vehicle ahead...
-                         //lead_car_state  ( , Lead Car)    
-                         //   ,        
-                         //  State  ,  , ,      
-                         //     ,    
-
-  if(spirals.size() == 0){ //  (spirals)  ,     
-                           // spirals motion_planner.generate_spirals()        (vector).
-                           // spirals.size() == 0,             .
-                           //, spirals       ,    (path_planner()) .
-  	cout << "Error: No spirals generated " << endl;
-  	return;
-  }
-
-
-
-  //       (spirals) ,       
-  // spiral( )   ,  spirals_x, spirals_y, spirals_v .
-  for(int i = 0; i < spirals.size(); i++){ //spirals     
-                                           //spirals motion_planner.generate_spirals()     () 
-                                           //spirals.size()    
-
-    auto trajectory = motion_planner._velocity_profile_generator.generate_trajectory( 
-      spirals[i], desired_speed, ego_state,lead_car_state, behavior); //  spiral( )     trajectory 
-                                                                      //generate_trajectory() motion_planner   
-                                                                      //spirals[i]  i  
-                                                                      //desired_speed     
-                                                                      //ego_state     (,  )
-                                                                      //lead_car_state    ( )
-                                                                      //behavior     (, ,  )
-                                                                      // trajectory i spiral       
-//  X, Y      
-//   (spirals)    X, Y      
-//motion_planner._velocity_profile_generator.generate_trajectory()    .
-//      (spirals_x, spirals_y, spirals_v)       .
-    vector<double> spiral_x;
-    vector<double> spiral_y;
-    vector<double> spiral_v;
-
-    // trajectory() X, Y     spiral_x, spiral_y, spiral_v 
-    //trajectory[j] j      
-    //,  spirals[i]     X, Y     
-    for(int j = 0; j < trajectory.size(); j++){
-      double point_x = trajectory[j].path_point.x; //trajectory[j].path_point.x --> X
-      double point_y = trajectory[j].path_point.y; // trajectory[j].path_point.y --> y
-      double velocity = trajectory[j].v; //
-                                       
-      
-      // spiral  X, Y,   spirals_x, spirals_y, spirals_v 
-      //,   (spirals)  X, Y           .
-                                  // "  " (  )
-      spiral_x.push_back(point_x);  //point_x    (  X, Y  )
-                                   // spiral_x    (spiral)    X, Y,  
-      spiral_v.push_back(velocity); 
-    }
-
-                                  
-                                  //   (spirals)" 
-                                  //   spirals    spiral 
-                                  // spirals_x    (spirals)  ...s 
-    spirals_x.push_back(spiral_x); //spirals_x[i]  i    X 
-    spirals_y.push_back(spiral_y); //spirals_y[i]  i    Y 
-    spirals_v.push_back(spiral_v); //spirals_v[i]  i     
-
-/*
-, point_x, point_y, velocity    X, Y    
-spiral_x, spiral_y, spiral_v     (spiral)  X, Y,  
-spirals_x, spirals_y, spirals_v     (spirals)   
-*/
-
-  }
-
-
-  //  "  (spiral) ,        "
-  // motion_planner.get_best_spiral_idx()         
-  //   x_points, y_points, v_points      
-
-
-  best_spirals = motion_planner.get_best_spiral_idx(spirals, obstacles, goal); //get_best_spiral_idx()     
-                                                                       // spirals(    )  (obstacles)   (goal)    
-                                                                      //     best_spirals  
-  int best_spiral_idx = -1; //       -1 
-                            //  get_best_spiral_idx()     ,  -1 .
-
-  if(best_spirals.size() > 0) //best_spirals     ,     .
-  	best_spiral_idx = best_spirals[best_spirals.size()-1]; //best_spirals.size() - 1     
-                                                          // ,    best_spiral_idx  ,   -1 
-
-
-  //                                                         
-  int index = 0; // index = 0;       
-  int max_points = 20; // 20    (     )
-  int add_points = spirals_x[best_spiral_idx].size(); //add_points = spirals_x[best_spiral_idx].size();   (best_spiral_idx)    
-  while( x_points.size() < max_points && index < add_points ){ //    (X, Y)    
-                                                               //x_points.size() < max_points      (20)   
-                                                               //index < add_points         
-
-   //  index (X, Y)  
-    double point_x = spirals_x[best_spiral_idx][index]; //   index X 
-    double point_y = spirals_y[best_spiral_idx][index]; //   index Y 
-    double velocity = spirals_v[best_spiral_idx][index]; //   index 
-    index++;
-    x_points.push_back(point_x); //   (X, Y)   x_points, y_points, v_points 
-    y_points.push_back(point_y); //          .
-    v_points.push_back(velocity);
-    // x_points, y_points, v_points           
-  } 
-
-
-// (25 2 13 )
 
 
 /**
- * @brief     (   )
+ * @brief 장애물 데이터 설정 함수 (스타터 코드 원본 유지)
  */
-/*
-  set_obst() (Obstacle)    
-, x_points y_points    , obstacles  State    .
-
-  main.cpp    obstacles    
-    obstacles          
-*/
 
 void set_obst(vector<double> x_points, vector<double> y_points, vector<State>& obstacles, bool& obst_flag){
 
 	for( int i = 0; i < x_points.size(); i++){
 		State obstacle;
-		obstacle.location.x = x_points[i]; //x_points:  x   ,x_points    State  ,obstacles     
-		obstacle.location.y = y_points[i]; //y_points:  y  
-		obstacles.push_back(obstacle); //obstacles:  (State)   ( )
+		obstacle.location.x = x_points[i]; 
+		obstacle.location.y = y_points[i]; 
+		obstacles.push_back(obstacle); 
 	}
-	obst_flag = true; //obst_flag:      ( )
-                    //   obst_flag true 
+	obst_flag = true; 
 }
-// #2
+//여기까지 #2
 
 
-// normalize_angle
+//누락디었던 normalize_angle추가
 double normalize_angle(double angle)
 {
     if (std::abs(angle) > M_PI)
@@ -545,7 +251,7 @@ double normalize_angle(double angle)
     }
 }
 
-// find_closet_point
+//누락되었던 find_closet_point추가
 // find the point that is closest to the point (x_position, y_position)
 // and return its index in the list of points (x_pts, y_pts)
 int find_closest_point(double x_position, double y_position, const vector<double> &x_pts, const vector<double> &y_pts)
@@ -567,36 +273,33 @@ int find_closest_point(double x_position, double y_position, const vector<double
     return closest_point_index;
 }
 /**
- * @brief   
-  * @note WebSocket      
+ * @brief 메인 실행 함수
+  * @note WebSocket을 통해 자율주행 차량의 데이터를 실시간으로 송수신
  */
 
- //main()  (   ),  WebSocket         
+ //main() 함수 (자율주행 차량의 실행 시작점),이 코드는 WebSocket을 통해 자율주행 차량 데이터를 송수신하는 서버를 초기화하고 실행하는 역할
 int main ()
 {
-  cout << "starting server" << endl; //"starting server"    
-  uWS::Hub h;  // WebSocket               
-
+  cout << "starting server" << endl; 
+  uWS::Hub h;  
   double new_delta_time;
   int i = 0;
 
 
-   // PID      (steer_pid_data.txt, throttle_pid_data.txt    )
-   // PID(--)      
+   // PID 제어기 데이터 저장 파일 초기화 (steer_pid_data.txt, throttle_pid_data.txt 두 개의 파일을 초기화)
+   //→ PID(비례-적분-미분) 제어기의 조향 및 가속 데이터 저장
   fstream file_steer;
-  file_steer.open("steer_pid_data.txt", std::ofstream::out | std::ofstream::trunc); //std::ofstream::trunc       
-                                                                                   //,     PID    
+  file_steer.open("steer_pid_data.txt", std::ofstream::out | std::ofstream::trunc); 
   file_steer.close();
   fstream file_throttle;
   file_throttle.open("throttle_pid_data.txt", std::ofstream::out | std::ofstream::trunc);
   file_throttle.close();
 
 
-  //     
-  time_t prev_timer; //prev_timer, timer      
+  // 시간 측정을 위한 변수 설정
+  time_t prev_timer; //prev_timer, timer → 실행 시간 측정을 위한 변수
   time_t timer;
-  time(&prev_timer); //time(&prev_timer);      prev_timer 
-                     //  new_delta_time        
+  time(&prev_timer); 
 
 
   // initialize pid steer
@@ -611,13 +314,13 @@ int main ()
   **/
 
 
- // TODO (Step 1): PID    
-  PID pid_steer = PID(); // (steer) PID  
-  pid_steer.Init(KP_STEER, KI_STEER, KD_STEER, MAX_STEER, MIN_STEER); //mithul12 
+ // TODO (Step 1): PID 제어기 생성 및 초기화
+  PID pid_steer = PID(); 
+  pid_steer.Init(KP_STEER, KI_STEER, KD_STEER, MAX_STEER, MIN_STEER); //mithul12의 코드응용
 
-  PID pid_throttle = PID(); //  (throttle) PID  
-  pid_throttle.Init(KP_THROTTLE, KI_THROTTLE, KD_THROTTLE, MAX_THROTTLE, MIN_THROTTLE); //mithul12 
-// TODO (Step 1)  PID  ,         .
+  PID pid_throttle = PID(); 
+  pid_throttle.Init(KP_THROTTLE, KI_THROTTLE, KD_THROTTLE, MAX_THROTTLE, MIN_THROTTLE); //mithul12의 코드응용
+
 
 
 
@@ -625,100 +328,85 @@ int main ()
 
 
 /*
-  WebSocket  (h.onMessage())  ,     ** (path_planner )**  
-,          
+아래 코드는 WebSocket 이벤트 핸들러(h.onMessage()) 내부에서 실행되며, 차량의 주행 데이터를 받아 **경로를 계획(path_planner 호출)**하는 역할 수행
+즉, 자율주행 차량과 서버 간의 실시간 데이터 송수신 및 처리를 담당
 */
-  //path_planner()  WebSocket  (h.onMessage()) 
-  //uWS::WebSocket<uWS::SERVER> ws  WebSocket ,   
-  //: WebSocket     ,    .
-  h.onMessage([&pid_steer, &pid_throttle, &new_delta_time, &timer, &prev_timer, //[&pid_steer, &pid_throttle, &new_delta_time, ...]     (     )
-    &i, &prev_timer](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode)  //char *data, size_t length, uWS::OpCode opCode    
+
+  h.onMessage([&pid_steer, &pid_throttle, &new_delta_time, &timer, &prev_timer, 
+    &i, &prev_timer](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode)  
   {
-        auto s = hasData(data);  // JSON  
-                                 //hasData(data)   null   (   )
+        auto s = hasData(data);  
 
         if (s != "") {
 
-          auto data = json::parse(s); // JSON  
-                                      //json::parse(s)   JSON  
-                                      //:   JSON       .
+          auto data = json::parse(s); 
 
 
           // create file to save values
-          // PID     
-          fstream file_steer; //fstream   OPEN
-          file_steer.open("steer_pid_data.txt"); //steer_pid_data.txt  (steering) PID  
-          fstream file_throttle; //fstream   OPEN
-          file_throttle.open("throttle_pid_data.txt"); //throttle_pid_data.txt  (throttle) PID  
+          // PID 제어 데이터를 저장할 파일 열기
+          fstream file_steer; 
+          file_steer.open("steer_pid_data.txt"); 
+          fstream file_throttle; 
+          file_throttle.open("throttle_pid_data.txt"); 
 
           
-          //    
-          vector<double> x_points = data["traj_x"]; //x_points, y_points      
+          // 차량의 주행 데이터 받아오기
+          vector<double> x_points = data["traj_x"]; 
           vector<double> y_points = data["traj_y"];
-          vector<double> v_points = data["traj_v"]; //v_points      
-          double yaw = data["yaw"]; //yaw    ()
-          double velocity = data["velocity"]; //velocity    
-          double sim_time = data["time"]; //sim_time    
-          double waypoint_x = data["waypoint_x"]; //waypoint_x, waypoint_y, waypoint_t    (x, y) (yaw)
+          vector<double> v_points = data["traj_v"]; 
+          double yaw = data["yaw"]; 
+          double velocity = data["velocity"]; 
+          double sim_time = data["time"]; 
+          double waypoint_x = data["waypoint_x"]; 
           double waypoint_y = data["waypoint_y"];
           double waypoint_t = data["waypoint_t"];
-          bool is_junction = data["waypoint_j"]; //is_junction     
-          string tl_state = data["tl_state"]; //tl_state   (: "red", "green" )
+          bool is_junction = data["waypoint_j"]; 
+          string tl_state = data["tl_state"]; 
 
-          double x_position = data["location_x"]; //x_position, y_position, z_position    
+          double x_position = data["location_x"]; 
           double y_position = data["location_y"];
           double z_position = data["location_z"];
-          // --- :       .
+          
 
-          //   
+          // 장애물 데이터 처리
           if(!have_obst){
-          	vector<double> x_obst = data["obst_x"]; //data["obst_x"], data["obst_y"]   x, y  
+          	vector<double> x_obst = data["obst_x"]; 
           	vector<double> y_obst = data["obst_y"];
-          	set_obst(x_obst, y_obst, obstacles, have_obst); //  obstacles  
-                                                          //have_obst = true;      
-          } // --:        .
+          	set_obst(x_obst, y_obst, obstacles, have_obst); 
+          } 
          
 
-          //   
-          //goal       (waypoint) .
-          //waypoint_x, waypoint_y, waypoint_t     
+          // 목표 위치 설정
+          //goal 객체를 생성하여 차량이 이동해야 할 목표 위치(waypoint)를 설정.
+          //waypoint_x, waypoint_y, waypoint_t 값을 사용하여 목표 상태를 정의
           State goal;
           goal.location.x = waypoint_x;
           goal.location.y = waypoint_y;
           goal.rotation.yaw = waypoint_t;
 
-           //   
-           //    path_planner()  .
-           //     
-          vector< vector<double> > spirals_x; //spirals_x, spirals_y, spirals_v    (spirals) x, y    
+           // 경로 계획 수행
+           //경로 계획을 수행하기 위해 path_planner() 함수를 호출.
+           //경로 생성 결과를 저장할 벡터 선언
+          vector< vector<double> > spirals_x; 
           vector< vector<double> > spirals_y;
           vector< vector<double> > spirals_v;
-          vector<int> best_spirals; //best_spirals    
+          vector<int> best_spirals; 
 
-          // path_planner()        
+          
           path_planner(x_points, y_points, v_points, yaw, velocity, goal, is_junction, tl_state, spirals_x, spirals_y, spirals_v, best_spirals);
 
 
 
           // Save time and compute delta time
-            //      
-          time(&timer);   //time(&timer);    . 
+          time(&timer); 
 
 
-          new_delta_time = difftime(timer, prev_timer); //difftime(timer, prev_timer);      ( ) .
-          prev_timer = timer; //prev_timer   
+          new_delta_time = difftime(timer, prev_timer); 
+          prev_timer = timer; 
 
-          /* 
-            WebSocket       ,   path_planner()      
-            ,   PID      
-          */
+       
 
-
-
-
-
-          //    (steering) PID    
-          //,          .
+         
           ////////////////////////////////////////
           // Steering control
           ////////////////////////////////////////
@@ -726,67 +414,42 @@ int main ()
           /**
           * TODO (step 3): uncomment these lines
           **/
-//           // Update the delta time with the previous command
-           pid_steer.UpdateDeltaTime(new_delta_time);  //PID  delta time( )  .
-                                                         //      PID     .
-                                                         //     
-                                                         //464,467 pid  
+          // Update the delta time with the previous command
+           pid_steer.UpdateDeltaTime(new_delta_time);  
 
 
-           //  TODO (Step 3): (steer)  
+           // TODO (Step 3): 조향(steer) 제어 적용
           // Compute steer error
         
-        double steer_output = 0.0;
-        //double steer_output; //mithul12       , mithul12  ,   
-                            //steer_output : PID     
         
-        //double error_steer; //  
-        double error_steer = 0.0;  //   (  ) ,error_steer :     
-                                   // 0   -->      ,  0 
-                                   //      .
-                                   // 3      
+        //double steer_output; //mithul12의 코드 적용인줄 알았는데 원래 있던 스타터 코드, mithul12가 위치만 바꾼것, 아래의 중복코드는 주석처리
+        double steer_output = 0.0;                   
+        
+        //double error_steer; //스타터 코드 원본
+        double error_steer = 0.0;  
+                                 
  
-        // 3  ,mithul12                              
-        int closest_point_index = find_closest_point(x_position, y_position, x_points, y_points); //  (x_position, y_position)      .
-                                                                                              //,            .
+        //아래 3줄의 코드 ,mithul12의 코드응용                             
+        int closest_point_index = find_closest_point(x_position, y_position, x_points, y_points); 
         double angle = angle_between_points(x_position, y_position, x_points[closest_point_index], y_points[closest_point_index]); 
-                       //       () . 
-                       //,     (waypoint ) .
-        error_steer = normalize_angle(angle - yaw); // (waypoint)   (yaw)   .
-                                                    // ,       error_steer.                       
-                                   
-
-
-        //double steer_output;  //steer_output : PID     
-          // TODO (Step 3)   ,     pid_steer    .
-          // mithul12 
-
-
-
+        error_steer = normalize_angle(angle - yaw);                       
+        //여기까지 mithul12의 코드응용
 
           /**
           * TODO (step 3): compute the steer error (error_steer) from the position and the desired trajectory
-           TODO (Step 3):  (error_steer)  PID  
+           TODO (Step 3): 조향 오차(error_steer)를 계산하여 PID 입력으로 전달
           **/
-//           error_steer = 0;  //   (error_steer) 
-                               //        (waypoint)   .
-                              //     error_steer = 0; .
+          // error_steer = 0;  //주석 처리된 조향 오차(error_steer) 계산
+                            
 
           /**
           * TODO (step 3): uncomment these lines
           **/
-//           // Compute control to apply
-           pid_steer.UpdateError(error_steer);   //PID   ,PID    ,    .
-                                                  //UpdateError(error_steer) : PID      .
-           steer_output = pid_steer.TotalError(); //TotalError() :    .
-                                                    //  :  (error_steer)         
-                                                    //error_steer = 0;  , PID     , mithul12  602  ,  
+        // Compute control to apply
+           pid_steer.UpdateError(error_steer);   
+           steer_output = pid_steer.TotalError(); 
+                                                   
 
-//          
-// 
-           // Save data                                    //  PID   ,PID     (steer_pid_data.txt) .
-                                                                 //    ,       .
-                                                                 // steer control  
            file_steer.seekg(std::ios::beg);
            for(int j=0; j < i - 1; ++j) {
                file_steer.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -794,23 +457,20 @@ int main ()
            file_steer  << i ;
            file_steer  << " " << error_steer;
            file_steer  << " " << steer_output << endl;
-           //  pid_steer.UpdateError(error_steer); steer_output = pid_steer.TotalError();    
+    
 
            
 
-//  : TODO (Step 3)   (error_steer, steer_output)
-// (error_steer)    PID    
-//PID (pid_steer.UpdateError())       
-//   , PID     
-// :  PID   ! (error_steer)      ! 
+// 여기까지 : TODO (Step 3)에서 변수 선언 (error_steer, steer_output)
+//조향 오차(error_steer) 계산이 구현되지 않아 PID 적용 코드가 주석 처리됨
+//PID 제어기(pid_steer.UpdateError())를 호출하려면 먼저 오차 계산 로직을 추가해야 함
+//현재는 단순히 변수만 정의하고, PID 제어기 로직을 나중에 추가할 예정
+// 결론: 현재는 PID 적용 전 상태! 오차(error_steer) 계산이 구현되면 주석을 해제하고 활성화해야 함! 
 
       
-
-
-
 /*
-   PID    (throttle) (brake)  
-        :  (error_throttle)     
+아래의 코드는  PID 제어기를 이용해 차량의 가속(throttle)과 감속(brake)을 조절하는 역할
+그런데 스타터 코드에서 주석 처리된 부분이 많음 → 이유: 속도 오차(error_throttle)를 계산하는 코드가 아직 없기 때문
 
 */
         ////////////////////////////////////////
@@ -821,62 +481,42 @@ int main ()
           * TODO (step 2): uncomment these lines
           **/
 //           // Update the delta time with the previous command
-           pid_throttle.UpdateDeltaTime(new_delta_time); //PID   (delta time)  .
-                                                           //  PID      ( ).
-                                                           //    ,    .
-                                                           //464 pid_steer.Init(KP_STEER, KI_STEER, KD_STEER, MAX_STEER, MIN_STEER);
-                                                           //467 pid_throttle.Init(KP_THROTTLE, KI_THROTTLE, KD_THROTTLE, MAX_THROTTLE, MIN_THROTTLE); 
-                                                           // 464,467  
+           pid_throttle.UpdateDeltaTime(new_delta_time); 
                                                           
-           //  TODO (Step 2): (throttle)    
+           //TODO (Step 2): 가속(throttle) 및 브레이크 제어 적용
           // Compute error of speed
-          //double error_throttle; //   
-          double error_throttle = 0.0;  //   (  ) ,error_throttle :         
-                                      //      error_throttle = 0;  
-                                      //error_throttle = 0;     (     )
-                                      //     ,      .
+          //double error_throttle; //스타터 코드 원본 
+          double error_throttle = 0.0;  
+                                     
           /**
           * TODO (step 2): compute the throttle error (error_throttle) from the position and the desired speed
           **/
           // modify the following line for step 2
-          // error_throttle = 0; // .. 
-          error_throttle = v_points[closest_point_index] - velocity; //mithul12  ,     
+          // error_throttle = 0; //
+          error_throttle = v_points[closest_point_index] - velocity; //mithul12의 코드응용 
 
           //double throttle_output;
           double throttle_output = 0.0;
           double brake_output;
 
-          //* TODO (Step 2):  (error_throttle)  PID  
+          //* TODO (Step 2): 속도 오차(error_throttle)를 계산하여 PID 입력으로 전달
           /**
           * TODO (step 2): uncomment these lines
           **/
-//           // Compute control to apply
-             pid_throttle.UpdateError(error_throttle); //PID   (error_throttle)     .
-             double throttle = pid_throttle.TotalError(); //PID    throttle ( ) .
-                                                        //error_throttle       
-                                                        //    ,     .
-                                                        //    ( 687   ,error_throttle = v_points[closest_point_index] - velocity;    
-
-//           
-// 
-//           // --      ( )
-//           //throttle_output() brake_output( )  .
-//           // Adapt the negative throttle to break
-            //error_throttle = v_points[closest_point_index] - velocity;    
-
-             if (throttle > 0.0) {                      //throttle()  (>0)  throttle_output  ()
-                                                        //throttle()  (<0)  brake_output  ()
-                                                        // throttle        .   
-                                                        // (error_throttle)      . ( 687  )
+         // Compute control to apply
+             pid_throttle.UpdateError(error_throttle); 
+             double throttle = pid_throttle.TotalError(); 
+                                                        
+                                                      
+             if (throttle > 0.0) {                      
+                                                        
               throttle_output = throttle;
              brake_output = 0;
              } else {
              throttle_output = 0;
              brake_output = -throttle;
-           }  //      (    )
-             // PID   ,  error_throttle, brake_output, throttle_output  throttle_pid_data.txt   .
-             //   throttle      .
-             //PID   ,   PID    .
+           }  //여기까지 브레이크 및 가속도 설정 코드 (원래 스타터코드에서 주석 처리되었었는데 해제함)
+             
 
 
 
@@ -889,202 +529,159 @@ int main ()
            file_throttle  << " " << error_throttle;
            file_throttle  << " " << brake_output;
            file_throttle  << " " << throttle_output << endl;
-            //  PID   
-//error_throttle( )       0  --> ( 682  )
-//PID (pid_throttle.UpdateError())             
-//throttle_output brake_output   PID    
-// PID   !        
+            // 여기까지 PID 값 저장 코드
 
 
 
-
-
-//  : WebSocket        
-//        (steer, throttle, brake) WebSocket  ,      
           // Send control
-          // JSON    
-          // (brake, throttle, steer) JSON  
+          // JSON 데이터 생성 및 전송
+          //제어 신호(brake, throttle, steer)를 JSON 객체에 저장
           json msgJson;
-          msgJson["brake"] = brake_output; //brake_output :  
-          msgJson["throttle"] = throttle_output; //throttle_output :  
-          msgJson["steer"] = steer_output; //steer_output : (steering) 
-          // WebSocket          
+          msgJson["brake"] = brake_output; 
+          msgJson["throttle"] = throttle_output; 
+          msgJson["steer"] = steer_output; 
+        
 
           
 
-          //    (NaN :steer_output throttle_output    NaN (Not a Number)   . 
-          //   0          )
-          // : if (isnan(steer_output) || isnan(throttle_output))  NaN  ,   0 
-          //name 'steer' is not defined   -->  steer_output        .  NaN  
+          // 유효성 검사 추가 (NaN체크 :steer_output이나 throttle_output 값이 계산 중에 NaN (Not a Number)이 될 가능성이 있음. 
+          //name 'steer' is not defined 에러가 발생 --> 이는 steer_output 값이 정의되지 않거나 잘못된 데이터를 전달했을 가능성을 나타냄. 따라서 NaN 체크는 필요
           if (isnan(steer_output) || isnan(throttle_output)) {
             cout << "Error: NaN detected in steer or throttle output" << endl;
             steer_output = 0.0;
             throttle_output = 0.0;
           }
 
-          //  
-          //name 'steer' is not defined  WebSocket  JSON  steer     . 
-          //   steer_output     
+         
+          //name 'steer' is not defined 에러는 WebSocket으로 전송되는 JSON 데이터에서 steer 필드가 빠졌거나 잘못 전달되었음을 의미. 
           cout << "Steer Output: " << steer_output << ", Throttle Output: " << throttle_output << endl;
 
 
 
 
-          //  JSON  
-          msgJson["trajectory_x"] = x_points; //trajectory_x, trajectory_y :   (x, y )
+          //경로 데이터를 JSON 객체에 저장
+          msgJson["trajectory_x"] = x_points; 
           msgJson["trajectory_y"] = y_points;
-          msgJson["trajectory_v"] = v_points; //trajectory_v :    
-          //        .
+          msgJson["trajectory_v"] = v_points; 
+       
 
 
-         //  (spiral paths) JSON  
-          msgJson["spirals_x"] = spirals_x; //spirals_x, spirals_y :  (spiral path) x, y 
+         //생성된 주행 경로(spiral paths)를 JSON 객체에 저장
+          msgJson["spirals_x"] = spirals_x; 
           msgJson["spirals_y"] = spirals_y;
-          msgJson["spirals_v"] = spirals_v; //spirals_v :    
-          msgJson["spiral_idx"] = best_spirals; //spiral_idx :    (best spiral)
-          //       ,   .
+          msgJson["spirals_v"] = spirals_v; 
+          msgJson["spiral_idx"] = best_spirals; 
+     
 
-          //     (maneuver) JSON  
-          //  STOPPED, FOLLOW_LANE, DECELERATE_TO_STOP     .
-          //           
+          //현재 차량이 수행 중인 행동 상태(maneuver)를 JSON 객체에 저장
           msgJson["active_maneuver"] = behavior_planner.get_active_maneuver();
-
-
-
 
           //  min point threshold before doing the update
           // for high update rate use 19 for slow update rate use 4
-             //  
-          msgJson["update_point_thresh"] = 16; //      16   .
-                                               //    ,     .
-                                               //      .
+             // 주기적인 업데이트
+          msgJson["update_point_thresh"] = 16; 
 
 
-
-          auto msg = msgJson.dump(); //JSON    WebSocket   .
-                                      // WebSocket   JSON   .
+          auto msg = msgJson.dump(); 
 
           i = i + 1;
-          file_steer.close(); //(steer_pid_data.txt, throttle_pid_data.txt) .
+          file_steer.close(); 
           file_throttle.close();
-          //    ,      .
+        
 
-
-
-      ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT); //WebSocket  JSON   
-                                                            //ws.send()   msg.data()()  .
-                                                            //   (, ,  )   .
+      ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT); 
 
     }
 
   });
 
 
-  // (WebSocket)    
-  //   
-  //WebSocket     .
+  //여기서부터 클라이언트(WebSocket) 연결 및 해제 관리
   h.onConnection([](uWS::WebSocket<uWS::SERVER> ws, uWS::HttpRequest req)
   {
-      cout << "Connected!!!" << endl; //cout << "Connected!!!" << endl;     .
+      cout << "Connected!!!" << endl; 
     }); 
 
 
 
- //    
- //     .
+ // 클라이언트 연결 해제 이벤트
+ //클라이언트가 연결을 끊었을 때 실행되는 코드.
   h.onDisconnection([&h](uWS::WebSocket<uWS::SERVER> ws, int code, char *message, size_t length)
     {
-      ws.close(); //ws.close();  WebSocket  .
-      cout << "Disconnected" << endl; //cout << "Disconnected" << endl;     .
-    }); // WebSocket     .
+      ws.close(); 
+      cout << "Disconnected" << endl; 
+    }); 
 
 
 
 
 
-    // WebSocket  
-  int port = 4567; //WebSocket    4567   
-  if (h.listen("0.0.0.0", port)) //h.listen("0.0.0.0", port) :    4567    .
+    // WebSocket 서버 실행
+  int port = 4567; 
+  if (h.listen("0.0.0.0", port)) 
     {
       cout << "Listening to port " << port << endl;
-      h.run(); //h.run(); : WebSocket  .
+      h.run(); 
     }
   else
     {
-      cerr << "Failed to listen to port" << endl; //  (if  )  "Failed to listen to port"    .
+      cerr << "Failed to listen to port" << endl; 
       return -1;
-    } // WebSocket  ,   .
-//   (brake, throttle, steer)   JSON   WebSocket  .
-//     , WebSocket  .
-// update_point_thresh     .
-//WebSocket   4567    .
+    } 
+
 }
 
 
 
 /*
- 1. pid_steer.UpdateDeltaTime(new_delta_time); (576)   
-  :
+ 1. pid_steer.UpdateDeltaTime(new_delta_time); 주석 해제 이유
+추가된 코드:
 
-pid_steer.Init(KP_STEER, KI_STEER, KD_STEER, MAX_STEER, MIN_STEER); (464)
-pid_throttle.Init(KP_THROTTLE, KI_THROTTLE, KD_THROTTLE, MAX_THROTTLE, MIN_THROTTLE); (467)
- :
+pid_steer.Init(KP_STEER, KI_STEER, KD_STEER, MAX_STEER, MIN_STEER); 
+pid_throttle.Init(KP_THROTTLE, KI_THROTTLE, KD_THROTTLE, MAX_THROTTLE, MIN_THROTTLE); 
+설명: Init() 함수를 통해 PID 컨트롤러가 올바르게 초기화되었기 때문에 주석 해제 가능해짐.
 
-Init()   PID       .
- 2. pid_steer.UpdateError(error_steer); / steer_output = pid_steer.TotalError(); (623, 625)   
-  :
+2. pid_steer.UpdateError(error_steer); / steer_output = pid_steer.TotalError();  주석 해제 이유
+추가된 코드: 
+error_steer = normalize_angle(angle - yaw); 
+int closest_point_index = find_closest_point(x_position, y_position, x_points, y_points); 
+double angle = angle_between_points(x_position, y_position, x_points[closest_point_index], y_points[closest_point_index]); 
 
-error_steer = normalize_angle(angle - yaw); (602)
-int closest_point_index = find_closest_point(x_position, y_position, x_points, y_points); (600)
-double angle = angle_between_points(x_position, y_position, x_points[closest_point_index], y_points[closest_point_index]); (601)
- :
+설명: 조향 오차(error_steer) 계산이 구현되었기 때문에 PID 컨트롤러가 정상적으로 동작할 수 있음.
+find_closest_point()와 angle_between_points()를 통해 조향 오차가 계산되므로 주석 해제 가능.
 
- (error_steer)    PID     .
-find_closest_point() angle_between_points()       .
- 3. file_steer    (631~635)   
-  :
-
-pid_steer.UpdateError(error_steer); (623)
-steer_output = pid_steer.TotalError(); (625)
- :
-
-   steer_pid_data.txt      .
- 4. pid_throttle.UpdateDeltaTime(new_delta_time); (668)   
-  :
-
-pid_throttle.Init(KP_THROTTLE, KI_THROTTLE, KD_THROTTLE, MAX_THROTTLE, MIN_THROTTLE); (467)
- :
-
-PID    delta time  .
- 5. pid_throttle.UpdateError(error_throttle); / double throttle = pid_throttle.TotalError(); (702, 703)   
-  :
-
-error_throttle = v_points[closest_point_index] - velocity; (687)
- :
-
- (error_throttle)    PID    
- 6. throttle_output  brake_output   (718~722)   
-  :
-
-error_throttle = v_points[closest_point_index] - velocity; (687)
-double throttle = pid_throttle.TotalError(); (703)
- :
-
-   PID    /  .
- 7. file_throttle    (727~733)   
-  :
-
-pid_throttle.UpdateError(error_throttle); (702)
-double throttle = pid_throttle.TotalError(); (703)
-throttle_output  brake_output   (718~722)
- :
-
-PID /    throttle_pid_data.txt   .
-  :
- PID (Init()), /  (error_steer, error_throttle)  ,  PID          ! 
+3. file_steer 데이터 저장 코드 주석 해제 이유
+추가된 코드:
+pid_steer.UpdateError(error_steer); 
+steer_output = pid_steer.TotalError(); 
+설명:  조향 제어값이 계산되었으므로 steer_pid_data.txt에 저장하는 코드가 정상적으로 동작할 수 있음.
 
 
+4. pid_throttle.UpdateDeltaTime(new_delta_time);  주석 해제 이유
+추가된 코드:
+pid_throttle.Init(KP_THROTTLE, KI_THROTTLE, KD_THROTTLE, MAX_THROTTLE, MIN_THROTTLE); 
+설명: PID 컨트롤러가 초기화되었기 때문에 delta time 업데이트가 가능해짐.
 
+5. pid_throttle.UpdateError(error_throttle); / double throttle = pid_throttle.TotalError();  주석 해제 이유
+추가된 코드: error_throttle = v_points[closest_point_index] - velocity; 
+설명:  속도 오차(error_throttle) 계산이 구현되었기 때문에 PID 컨트롤러가 정상 동작 가능
+
+6. throttle_output 및 brake_output 설정 코드 주석 해제 이유
+추가된 코드: 
+error_throttle = v_points[closest_point_index] - velocity;
+double throttle = pid_throttle.TotalError(); 
+설명: 속도 오차 및 PID 계산 결과가 나오므로 가속/감속 조정이 가능해짐.
+
+
+7. file_throttle 데이터 저장 코드 주석 해제 이유
+추가된 코드: 
+pid_throttle.UpdateError(error_throttle); 
+double throttle = pid_throttle.TotalError();
+throttle_output 및 brake_output 설정 코드 
+설명:
+PID 가속/감속 값이 정상적으로 계산되었으므로 throttle_pid_data.txt 파일에 저장 가능.
+최종 결론:
+PID 초기화(Init()), 조향/속도 오차 계산(error_steer, error_throttle)이 추가되었기 때문에, 관련 PID 제어 코드와 로그 저장 코드가 정상적으로 주석 해제될 수 있었음!
 
 
 */
