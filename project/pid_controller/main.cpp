@@ -69,9 +69,13 @@ using json = nlohmann::json;
 //  값을 가져오는 파일: `pid_controller.h` (PID 제어 클래스 사용)
 //  값을 전달하는 파일: `pid_controller.cpp` (PID 제어 변수 업데이트)
 
+
+
 // PID parameters (조향 및 가속도를 위한 PID 계수 설정)
 //pid_controller.h나 planning_params.h에서 값이 정의될 수도 있으나 여기에 정의
 //mithul12의 코드응용 () - PID 파라메터 추가
+
+/* interation #1 : 차량이 인도로 올라가 버림
 static const double KP_STEER = 0.3;
 static const double KI_STEER = 0.001;
 static const double KD_STEER = 0.3;
@@ -83,6 +87,24 @@ static const double KI_THROTTLE = 0.0009;
 static const double KD_THROTTLE = 0.1;
 static const double MAX_THROTTLE = 1.0;
 static const double MIN_THROTTLE = -1.0;
+*/
+
+/* iteration #2*/
+static const double KP_STEER = 0.2;
+static const double KI_STEER = 0.0005;
+static const double KD_STEER = 0.1;
+
+static const double MAX_STEER = 1.2;
+static const double MIN_STEER = -1.2;
+
+static const double KP_THROTTLE = 0.1;
+static const double KI_THROTTLE = 0.0005;
+static const double KD_THROTTLE = 0.05;
+
+static const double MAX_THROTTLE = 1.0;
+static const double MIN_THROTTLE = -1.0;
+
+
 
 
 
