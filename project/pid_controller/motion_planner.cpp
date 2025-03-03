@@ -158,8 +158,14 @@ std::vector<int> MotionPlanner::get_best_spiral_idx(
   }
   if (best_spiral_idx != -1) {
     
-    std::cout << "Best Spiral Selected: " << best_spiral_idx << std::endl; //디버깅 출력, 내가 추가한 코드
     
+    //디버깅 출력 시작
+    std::cout << "Best Spiral Selected: " << best_spiral_idx << std::endl; 
+    std::cout << "Best Spiral First Point: (" 
+              << spirals[best_spiral_idx][0].path_point.x << ", " 
+              << spirals[best_spiral_idx][0].path_point.y << ")" << std::endl;
+    //디버깅 출력 끝
+   
 
     collisions.push_back(best_spiral_idx);
     return collisions;
@@ -167,6 +173,8 @@ std::vector<int> MotionPlanner::get_best_spiral_idx(
   std::vector<int> noResults;
   return noResults;
 }
+
+
 
 std::vector<std::vector<PathPoint>>
 MotionPlanner::transform_spirals_to_global_frame(
