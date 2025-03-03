@@ -144,7 +144,7 @@ std::vector<int> MotionPlanner::get_best_spiral_idx(
   for (size_t i = 0; i < spirals.size(); ++i) {
     double cost = calculate_cost(spirals[i], obstacles, goal_state);
 
-    std::cout << "Spiral Index: " << i << ", Cost: " << cost << std::endl; //디버깅 출력 , 내가 추가한 코드
+    //std::cout << "Spiral Index: " << i << ", Cost: " << cost << std::endl; //디버깅 출력 , 내가 추가한 코드
     //콘솔에 각 spiral의 cost 값과 선택된 최적의 spiral_idx가 출력됨.
     //특정 spiral의 cost가 DBL_MAX보다 크다면 충돌이 발생할 가능성이 있음.
 
@@ -158,14 +158,14 @@ std::vector<int> MotionPlanner::get_best_spiral_idx(
   }
   if (best_spiral_idx != -1) {
     
-    
+    /*
     //디버깅 출력 시작
     std::cout << "Best Spiral Selected: " << best_spiral_idx << std::endl; 
     std::cout << "Best Spiral First Point: (" 
               << spirals[best_spiral_idx][0].path_point.x << ", " 
               << spirals[best_spiral_idx][0].path_point.y << ")" << std::endl;
     //디버깅 출력 끝
-   
+   */
 
     collisions.push_back(best_spiral_idx);
     return collisions;
