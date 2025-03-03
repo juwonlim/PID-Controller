@@ -230,7 +230,7 @@ static const double MAX_THROTTLE = 1.0;
 static const double MIN_THROTTLE = -1.0; 
 */
 
-
+/*
 // iteration #9
 static const double KP_STEER = 0.32; 
 static const double KI_STEER = 0.001067; //(KP_STEER의 0.003333배)
@@ -247,7 +247,24 @@ static const double KD_THROTTLE = 0.1;  // KP_THROTTLE의 0.5배)
 
 static const double MAX_THROTTLE = 1.0; 
 static const double MIN_THROTTLE = -1.0; 
+*/
 
+
+//iteration #10
+static const double KP_STEER = 0.28; 
+static const double KI_STEER = 0.000933; // (KP_STEER의 0.003333배)
+static const double KD_STEER = 0.28; // (KP_STEER의 1배)
+
+static const double MAX_STEER = 1.12;  // (KP_STEER의 4배)
+static const double MIN_STEER = -1.12; 
+
+// 가속 반응속도 개선
+static const double KP_THROTTLE = 0.2; // 가속 반응 증가  
+static const double KI_THROTTLE = 0.0009; // (KP_THROTTLE의 0.0045배)
+static const double KD_THROTTLE = 0.1;  // (KP_THROTTLE의 0.5배)
+
+static const double MAX_THROTTLE = 1.0; 
+static const double MIN_THROTTLE = -1.0; 
 
 
 
