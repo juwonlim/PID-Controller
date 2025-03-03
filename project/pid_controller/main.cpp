@@ -172,7 +172,7 @@ static const double MIN_THROTTLE = -1.0;
 
 
 
-
+/* 
 // iteration #6 
 static const double KP_STEER = 0.26; // KP_STEER = 0.26 (+0.02 증가) → 차선 변경 반응 속도 증가
 static const double KI_STEER = 0.0006;  //KI_STEER = 0.0006 (-0.0002 감소) → 조향 오차 누적 완화
@@ -188,9 +188,28 @@ static const double KI_THROTTLE = 0.0007; //KI_THROTTLE = 0.0007 (-0.0001 감소
 static const double KD_THROTTLE = 0.05; //KD_THROTTLE = 0.05 (-0.01 감소) → 급격한 속도 변화 방지
 
 
-
 static const double MAX_THROTTLE = 1.0;
 static const double MIN_THROTTLE = -1.0;
+*/
+
+
+
+// iteration #7
+static const double KP_STEER = 0.3; // 조향 반응 속도 증가
+static const double KI_STEER = 0.0006;  // 기존 유지
+static const double KD_STEER = 0.08;  // 조향값 튀는 현상 완화
+
+static const double MAX_STEER = 0.7;  // 조향 최대값 줄임 (급격한 조향 방지)  
+static const double MIN_STEER = -0.7; //좌우 동일
+
+//가속반응속도 개선
+static const double KP_THROTTLE = 0.18;  // 가속 반응 증가  
+static const double KI_THROTTLE = 0.0007; // 기존 유지  
+static const double KD_THROTTLE = 0.04;  // 급격한 가속 완충 
+
+static const double MAX_THROTTLE = 1.0; // 기존 유지
+static const double MIN_THROTTLE = -1.0; //기존 유지
+
 
 
 
