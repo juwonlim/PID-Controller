@@ -1,3 +1,9 @@
+한국어 버전 writeup은 여기에 링크가 있습니다 [here](https://github.com/juwonlim/PID-Controller/blob/main/writeup(kor).pdf).
+English Version Writeup will be uploaded soon.
+iteration 11 will be trying soon.
+
+
+
 # Control and Trajectory Tracking for Autonomous Vehicle
 
 In this project, you will apply the skills you have acquired in this course to design a Proportional-Integral-Derivative (PID) controller to perform vehicle trajectory tracking. Given a trajectory as an array of locations, and a simulation environment, you will design and code a PID controller and test its efficiency on the CARLA simulator used in the industry.
